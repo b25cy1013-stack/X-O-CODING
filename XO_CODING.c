@@ -447,3 +447,235 @@ void drawMenu() {
     DrawText("PVC lets you choose Easy or Hard next", 105, 380, 20, DARKGRAY);
 }
 
+void drawGrid() {
+    DrawLine(200, 0, 200, 600, BLACK);
+    DrawLine(400, 0, 400, 600, BLACK);
+    DrawLine(0, 200, 600, 200, BLACK);
+    DrawLine(0, 400, 600, 400, BLACK);
+}
+
+void drawCellMark(int row, int col) {
+    int x;
+    int y;
+
+    x = col * 200 + 80;
+    y = row * 200 + 80;
+
+    if (board[row][col] == 'X') {
+        DrawText("X", x, y, 60, RED);
+    }
+
+    if (board[row][col] == 'O') {
+        DrawText("O", x, y, 60, BLUE);
+    }
+}
+
+void drawMarks() {
+    int row;
+    int col;
+
+    for (row = 0; row < 3; row++) {
+        for (col = 0; col < 3; col++) {
+            drawCellMark(row, col);
+        }
+    }
+}
+
+void drawScore() {
+    if (mode == MODE_PVC) {
+        DrawText(TextFormat("You:%d  CPU:%d  Draw:%d", scoreP1, scoreP2, draws), 135, 610, 20, BLACK);
+        DrawText(TextFormat("PVC Mode: %s", modeLabel()), 205, 635, 20, DARKGRAY);
+    } else {
+        DrawText(TextFormat("P1:%d  P2:%d  Draw:%d", scoreP1, scoreP2, draws), 150, 610, 20, BLACK);
+    }
+
+    DrawText("Use mouse or keys 1-9", 190, 585, 20, DARKGRAY);
+}
+
+void drawResult() {
+    if (result == 1) {
+        if (winnerMark == 'X') {
+            if (mode == MODE_PVC) {
+                DrawText("You Win!", 225, 660, 20, RED);
+            } else {
+                DrawText("Player 1 Wins!", 180, 640, 20, RED);
+            }
+        } else {
+            if (mode == MODE_PVC) {
+                DrawText("Computer Wins!", 185, 660, 20, RED);
+            } else {
+                DrawText("Player 2 Wins!", 180, 640, 20, RED);
+            }
+        }
+    }
+
+    if (result == 2) {
+        DrawText("Draw!", 250, 660, 20, BLUE);
+    }
+}
+
+void drawGameButtons() {
+    drawButton(btnNewGame, "New Game");
+    drawButton(btnMenu, "Menu");
+}
+
+void drawGame() {
+    drawGrid();
+    drawMarks();
+    drawScore();
+    drawResult();
+    drawGameButtons();
+}
+
+void menuInput(Vector2 mousep) {
+    if (buttonClicked(btnPVP, mousep)) {
+        startPVPGame();
+    }
+
+    if (buttonClicked(btnPVC, mousep)) {
+        pvcs();
+    }
+}
+
+void levelInput(Vector2 mousep) {
+    if (buttonClicked(btnEasy, mousep)) {
+        startPVCGame(EASY);
+    }
+
+    if (buttonClicked(btnHard, mousep)) {
+        startPVCGame(HARD);
+    }
+
+    switch (getDifficultyChoice()) {
+        case EASY:
+            startPVCGame(EASY);
+            break;
+        case HARD:
+            startPVCGame(HARD);
+            break;
+        default:
+            break;
+    }
+}
+
+void handleGameButtons(Vector2 mousep, int *choice) {
+    if (buttonClicked(btnNewGame, mousep)) {
+        resetRound();
+        *choice = -1;
+        return;
+    }
+
+    if (buttonClicked(btnMenu, mousep)) {
+        goToMenu();
+        *choice = -1;
+        return;
+    }
+}
+
+void boardClick(Vector2 mousep, int *choice) {
+    int picked;
+
+    if (!IsMouseButtonPressed(MOUSE_LEFT_BUTTON)) {
+        return;
+    }
+
+    picked = mouseChoice(mousep);
+    if (picked != -1) {
+        *choice = picked;
+    }
+}
+
+void playPVP(int choice) {
+    char mark;
+    bool placed;
+
+    if (choice == -1) {
+        return;
+    }
+
+    mark = markNow();
+    placed = putMarkInBoard(choice, mark);
+
+    if (!placed) {
+        return;
+    }
+
+    switchPlayer();
+    checkGameState();
+}
+
+void playPVCPlayerTurn(int choice) {
+    bool placed;
+
+    if (player != 1) {
+        return;
+    }
+
+    if (choice == -1) {
+        return;
+    }
+
+    placed = putMarkInBoard(choice, 'X');
+
+    if (!placed) {
+        return;
+    }
+
+    player = 2;
+    checkGameState();
+}
+
+void c_turn() {
+    int c_choice;
+    bool placed;
+
+    if (player != 2) {
+        return;
+    }
+
+    if (result != 0) {
+        return;
+    }
+
+    c_choice = c_move();
+
+    if (c_choice == -1) {
+        return;
+    }
+
+    placed = putMarkInBoard(c_choice, 'O');
+
+    if (!placed) {
+        return;
+    }
+
+    player = 1;
+    checkGameState();
+}
+
+void playGame(int choice) {
+    if (result != 0) {
+        return;
+    }
+
+    if (mode == MODE_PVP) {
+        playPVP(choice);
+    }
+
+    if (mode == MODE_PVC) {
+        playPVCPlayerTurn(choice);
+        c_turn();
+    }
+}
+
+void gameInput(Vector2 mousep, int *choice, bool allowMouseClick) {
+    if (!allowMouseClick) {
+        *choice = -1;
+        return;
+    }
+
+    boardClick(mousep, choice);
+    handleGameButtons(mousep, choice);
+    playGame(*choice);
+}
+
