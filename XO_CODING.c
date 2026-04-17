@@ -679,3 +679,52 @@ void gameInput(Vector2 mousep, int *choice, bool allowMouseClick) {
     playGame(*choice);
 }
 
+int main() {
+    int choice;
+    Vector2 mousep;
+    int frameAtStart;
+
+    InitWindow(WIDTH, HEIGHT, "Tic Tac Toe - Final Project");
+    SetTargetFPS(60);
+
+    srand((unsigned int)time(NULL));
+    resetRound();
+
+    while (!wclose()) {
+        choice = getKeyboardChoice();
+        mousep = GetMousePosition();
+        frameAtStart = screen;
+
+        if (frameAtStart == MENU) {
+            menuInput(mousep);
+        }
+
+        if (frameAtStart == difficulty) {
+            levelInput(mousep);
+        }
+
+        if (frameAtStart == GAME) {
+            gameInput(mousep, &choice, frameAtStart == GAME);
+        }
+
+        BeginDrawing();
+        ClearBackground((Color){240, 240, 240, 255});
+
+        if (screen == MENU) {
+            drawMenu();
+        }
+
+        if (screen == difficulty) {
+            drawDifficulty();
+        }
+
+        if (screen == GAME) {
+            drawGame();
+        }
+
+        EndDrawing();
+    }
+
+    CloseWindow();
+    return 0;
+}
