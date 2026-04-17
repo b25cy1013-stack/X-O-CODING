@@ -121,3 +121,329 @@ bool cellEmpty(int choice) {
 
     return false;
 }
+
+bool putMarkInBoard(int choice, char mark) {
+    int row;
+    int col;
+
+    if (!cellEmpty(choice)) {
+        return false;
+    }
+
+    row = rowFromChoice(choice);
+    col = colFromChoice(choice);
+
+    board[row][col] = mark;
+    return true;
+}
+
+char markNow() {
+    if (player == 1) {
+        return 'X';
+    }
+
+    return 'O';
+}
+
+void switchPlayer() {
+    if (player == 1) {
+        player = 2;
+    } else {
+        player = 1;
+    }
+}
+
+char checkRows() {
+    int row;
+
+    for (row = 0; row < 3; row++) {
+        if (board[row][0] == 0) {
+            continue;
+        }
+
+        if (board[row][0] == board[row][1] && board[row][1] == board[row][2]) {
+            return board[row][0];
+        }
+    }
+
+    return 0;
+}
+
+char checkCols() {
+    int col;
+
+    for (col = 0; col < 3; col++) {
+        if (board[0][col] == 0) {
+            continue;
+        }
+
+        if (board[0][col] == board[1][col] && board[1][col] == board[2][col]) {
+            return board[0][col];
+        }
+    }
+
+    return 0;
+}
+
+char checkDiagonals() {
+    if (board[0][0] != 0) {
+        if (board[0][0] == board[1][1] && board[1][1] == board[2][2]) {
+            return board[0][0];
+        }
+    }
+
+    if (board[0][2] != 0) {
+        if (board[0][2] == board[1][1] && board[1][1] == board[2][0]) {
+            return board[0][2];
+        }
+    }
+
+    return 0;
+}
+
+char checkWinner() {
+    char result;
+
+    result = checkRows();
+    if (result != 0) return result;
+
+    result = checkCols();
+    if (result != 0) return result;
+
+    result = checkDiagonals();
+    if (result != 0) return result;
+
+    return 0;
+}
+
+bool isBoardFull() {
+    int row;
+    int col;
+
+    for (row = 0; row < 3; row++) {
+        for (col = 0; col < 3; col++) {
+            if (board[row][col] == 0) {
+                return false;
+            }
+        }
+    }
+
+    return true;
+}
+
+void checkGameState() {
+    winnerMark = checkWinner();
+
+    if (winnerMark == 'X') {
+        result = 1;
+        scoreP1++;
+        return;
+    }
+
+    if (winnerMark == 'O') {
+        result = 1;
+        scoreP2++;
+        return;
+    }
+
+    if (isBoardFull()) {
+        result = 2;
+        draws++;
+        return;
+    }
+
+    result = 0;
+}
+
+bool moveWins(int choice, char mark) {
+    int row;
+    int col;
+    char tempWinner;
+
+    if (!cellEmpty(choice)) {
+        return false;
+    }
+
+    row = rowFromChoice(choice);
+    col = colFromChoice(choice);
+
+    board[row][col] = mark;
+    tempWinner = checkWinner();
+    board[row][col] = 0;
+
+    if (tempWinner == mark) {
+        return true;
+    }
+
+    return false;
+}
+
+int bestMoveFor(char mark) {
+    int spot;
+
+    for (spot = 1; spot <= 9; spot++) {
+        if (moveWins(spot, mark)) {
+            return spot;
+        }
+    }
+
+    return -1;
+}
+
+int easyMove() {
+    int spot;
+
+    while (1) {
+        spot = (rand() % 9) + 1;
+
+        if (cellEmpty(spot)) {
+            return spot;
+        }
+    }
+}
+
+int hardMove() {
+    int spot;
+
+    spot = bestMoveFor('O');
+    if (spot != -1) {
+        return spot;
+    }
+
+    spot = bestMoveFor('X');
+    if (spot != -1) {
+        return spot;
+    }
+
+    if (cellEmpty(5)) {
+        return 5;
+    }
+
+    if (cellEmpty(1)) return 1;
+    if (cellEmpty(3)) return 3;
+    if (cellEmpty(7)) return 7;
+    if (cellEmpty(9)) return 9;
+
+    for (spot = 1; spot <= 9; spot++) {
+        if (cellEmpty(spot)) {
+            return spot;
+        }
+    }
+
+    return -1;
+}
+
+int c_move() {
+    if (level == EASY) {
+        return easyMove();
+    }
+
+    return hardMove();
+}
+
+int getDifficultyChoice() {
+    if (keypres(KEY_E)) return EASY;
+    if (keypres(KEY_H)) return HARD;
+    return -1;
+}
+
+const char *modeLabel() {
+    if (level == HARD) {
+        return "Hard";
+    }
+
+    return "Easy";
+}
+
+int getKeyboardChoice() {
+    if (keypres(KEY_ONE)) return 1;
+    if (keypres(KEY_KP_1)) return 1;
+
+    if (keypres(KEY_TWO)) return 2;
+    if (keypres(KEY_KP_2)) return 2;
+
+    if (keypres(KEY_THREE)) return 3;
+    if (keypres(KEY_KP_3)) return 3;
+
+    if (keypres(KEY_FOUR)) return 4;
+    if (keypres(KEY_KP_4)) return 4;
+
+    if (keypres(KEY_FIVE)) return 5;
+    if (keypres(KEY_KP_5)) return 5;
+
+    if (keypres(KEY_SIX)) return 6;
+    if (keypres(KEY_KP_6)) return 6;
+
+    if (keypres(KEY_SEVEN)) return 7;
+    if (keypres(KEY_KP_7)) return 7;
+
+    if (keypres(KEY_EIGHT)) return 8;
+    if (keypres(KEY_KP_8)) return 8;
+
+    if (keypres(KEY_NINE)) return 9;
+    if (keypres(KEY_KP_9)) return 9;
+
+    return -1;
+}
+
+int mouseChoice(Vector2 mousep) {
+    if (mousep.x < 0 || mousep.x >= WIDTH) {
+        return -1;
+    }
+
+    if (mousep.y < 0 || mousep.y >= 600) {
+        return -1;
+    }
+
+    if (mousep.x < 200 && mousep.y < 200) return 1;
+    if (mousep.x >= 200 && mousep.x < 400 && mousep.y < 200) return 2;
+    if (mousep.x >= 400 && mousep.y < 200) return 3;
+
+    if (mousep.x < 200 && mousep.y >= 200 && mousep.y < 400) return 4;
+    if (mousep.x >= 200 && mousep.x < 400 && mousep.y >= 200 && mousep.y < 400) return 5;
+    if (mousep.x >= 400 && mousep.y >= 200 && mousep.y < 400) return 6;
+
+    if (mousep.x < 200 && mousep.y >= 400) return 7;
+    if (mousep.x >= 200 && mousep.x < 400 && mousep.y >= 400) return 8;
+    if (mousep.x >= 400 && mousep.y >= 400) return 9;
+
+    return -1;
+}
+
+bool buttonClicked(Rectangle button, Vector2 mousep) {
+    if (CheckCollisionPointRec(mousep, button) && IsMouseButtonPressed(MOUSE_LEFT_BUTTON)) {
+        return true;
+    }
+
+    return false;
+}
+
+void drawButton(Rectangle button, const char *text) {
+    Color fillColor;
+    int textWidth;
+    int textX;
+    int textY;
+
+    if (CheckCollisionPointRec(GetMousePosition(), button)) {
+        fillColor = GRAY;
+    } else {
+        fillColor = LIGHTGRAY;
+    }
+
+    DrawRectangleRec(button, fillColor);
+    DrawRectangleLinesEx(button, 2, DARKGRAY);
+
+    textWidth = MeasureText(text, 20);
+    textX = (int)(button.x + (button.width / 2) - (textWidth / 2));
+    textY = (int)(button.y + (button.height / 2) - 10);
+
+    DrawText(text, textX, textY, 20, BLACK);
+}
+
+void drawMenu() {
+    DrawText("Select Mode", 200, 100, 30, BLACK);
+    drawButton(btnPVP, "Player vs Player");
+    drawButton(btnPVC, "Player vs Computer");
+    DrawText("PVC lets you choose Easy or Hard next", 105, 380, 20, DARKGRAY);
+}
+
