@@ -12,8 +12,6 @@
 #define pvcmode 2
 #define easy 1
 #define hard 2
-#define wclose WindowShouldClose
-#define keypres IsKeyPressed
 char board[3][3];
 int scorep1 = 0;
 int scorep2 = 0;
@@ -199,7 +197,7 @@ bool isboardfull() {
     return true;
 }
 
-void g_state() {
+void g_state() {     //g-> state
     winnermark = checkwinner();
     if (winnermark == 'X') {
         result = 1;
@@ -282,7 +280,7 @@ int hardmove() {
     return -1;
 }
 
-int c_move() {
+int c_move() {     // c-> computer move 
     if (level == easy) {
         return easymove();
     }
@@ -324,7 +322,7 @@ int key_choice() {
     return -1;
 }
 
-int mouseChoice(Vector2 mousep) {
+int mouseChoice(Vector2 mousep) {   // mousep-> mouse position
     if (mousep.x < 0 || mousep.x >= windowwidth) {
         return -1;
     }
@@ -376,11 +374,11 @@ void drawmenu() {
 }
 
 void drawdifficulty() {
-    DrawText("Player vs Computer", 155, 90, 30, BLACK);
-    DrawText("Choose Easy or Hard", 165, 130, 26, DARKGRAY);
+    DrawText("Player vs Computer", 150, 90, 25, BLACK);
+    DrawText("Choose Easy or Hard", 160, 125, 24, DARKGRAY);
     drawbutton(btneasy, "Easy");
     drawbutton(btnhard, "Hard");
-    DrawText("Press E for Easy or H for Hard", 135, 390, 20, DARKGRAY);
+    DrawText("Press E for Easy or H for Hard", 135, 385, 18, DARKGRAY);
 }
 
 void drawgrid() {
@@ -403,7 +401,7 @@ void drawcellmark(int row, int col) {
     }
 }
 
-void drawmarks() {
+void drawmarks() {  
     int row;
     int col;
     for (row = 0; row < 3; row++) {
@@ -413,7 +411,7 @@ void drawmarks() {
     }
 }
 
-void drawscore() {
+void drawscore() {  
     if (mode == pvcmode) {
         DrawText(TextFormat("You:%d  CPU:%d  Draw:%d", scorep1, scorep2, draws), 135, 610, 20, BLACK);
         DrawText(TextFormat("PVC Mode: %s", modelabel()), 205, 635, 20, DARKGRAY);
